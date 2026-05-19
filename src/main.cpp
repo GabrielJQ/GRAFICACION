@@ -11,15 +11,12 @@
 
 const float PI = 3.14159265359f;
 
-enum CamMode {
-    CAM_PERSPECTIVE = 1,
-    CAM_TOP,
-    CAM_BOTTOM,
-    CAM_FRONT,
-    CAM_BACK,
-    CAM_LEFT,
-    CAM_RIGHT
-};
+float camAngleH = 0.5f;
+float camAngleV = 0.3f;
+float camDist = 6.0f;
+float mouseSensitivity = 0.003f;
+double lastMouseX = 0, lastMouseY = 0;
+bool mousePressed = false;
 
 void printMatrix(const Matrix3D& mat) {
     std::cout << "\n=== MATRIZ RESULTANTE ===\n";
@@ -306,62 +303,21 @@ void applyGLMatrix(const Matrix3D& mat) {
     glMultMatrixf(glMat);
 }
 
-void setCameraView(CamMode mode, float angleH, float angleV, float dist, int w, int h) {
+void setCameraView(float angleH, float angleV, float dist, int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-
-    float aspect = (float)w / (float)h;
-
-    if (mode == CAM_PERSPECTIVE) {
-        gluPerspective(45.0, aspect, 0.1, 100.0);
-    } else {
-        float viewSize = 4.5f;
-        if (aspect > 1.0f)
-            glOrtho(-viewSize * aspect, viewSize * aspect, -viewSize, viewSize, -20, 20);
-        else
-            glOrtho(-viewSize, viewSize, -viewSize / aspect, viewSize / aspect, -20, 20);
-    }
+    gluPerspective(45.0, (float)w / (float)h, 0.1, 100.0);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    float eyeX, eyeY, eyeZ;
-    float upX = 0, upY = 1, upZ = 0;
-    float cx = 0, cy = 0.2f, cz = 0;
+    float ch = cosf(angleH), sh = sinf(angleH);
+    float cv = cosf(angleV), sv = sinf(angleV);
+    float eyeX = dist * cv * ch;
+    float eyeY = dist * sv;
+    float eyeZ = dist * cv * sh;
 
-    switch (mode) {
-        case CAM_PERSPECTIVE: {
-            float ch = cosf(angleH), sh = sinf(angleH);
-            float cv = cosf(angleV), sv = sinf(angleV);
-            eyeX = dist * cv * ch;
-            eyeY = dist * sv;
-            eyeZ = dist * cv * sh;
-            break;
-        }
-        case CAM_TOP:
-            eyeX = 0; eyeY = dist; eyeZ = 0; upX = 0; upY = 0; upZ = -1;
-            break;
-        case CAM_BOTTOM:
-            eyeX = 0; eyeY = -dist; eyeZ = 0; upX = 0; upY = 0; upZ = 1;
-            break;
-        case CAM_FRONT:
-            eyeX = 0; eyeY = 0; eyeZ = dist; upX = 0; upY = 1; upZ = 0;
-            break;
-        case CAM_BACK:
-            eyeX = 0; eyeY = 0; eyeZ = -dist; upX = 0; upY = 1; upZ = 0;
-            break;
-        case CAM_LEFT:
-            eyeX = -dist; eyeY = 0; eyeZ = 0; upX = 0; upY = 1; upZ = 0;
-            break;
-        case CAM_RIGHT:
-            eyeX = dist; eyeY = 0; eyeZ = 0; upX = 0; upY = 1; upZ = 0;
-            break;
-        default:
-            eyeX = dist; eyeY = 0; eyeZ = 0; upX = 0; upY = 1; upZ = 0;
-            break;
-    }
-
-    gluLookAt(eyeX, eyeY, eyeZ, cx, cy, cz, upX, upY, upZ);
+    gluLookAt(eyeX, eyeY, eyeZ, 0, 0.2f, 0, 0, 1, 0);
 }
 
 void run() {
@@ -382,10 +338,24 @@ void run() {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
-    CamMode camMode = CAM_PERSPECTIVE;
-    float camAngleH = 0.5f;
-    float camAngleV = 0.3f;
-    float camDist = 6.0f;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int) {
+        if (button == GLFW_MOUSE_BUTTON_LEFT) {
+            mousePressed = (action == GLFW_PRESS);
+            if (mousePressed) glfwGetCursorPos(w, &lastMouseX, &lastMouseY);
+        }
+    });
+    glfwSetCursorPosCallback(window, [](GLFWwindow*, double xpos, double ypos) {
+        if (!mousePressed) return;
+        double dx = xpos - lastMouseX;
+        double dy = ypos - lastMouseY;
+        lastMouseX = xpos;
+        lastMouseY = ypos;
+        camAngleH -= (float)dx * mouseSensitivity;
+        camAngleV += (float)dy * mouseSensitivity;
+        if (camAngleV > 1.5f) camAngleV = 1.5f;
+        if (camAngleV < -1.5f) camAngleV = -1.5f;
+    });
 
     float scaleValue = 1.0f;
     float tx = 0.0f, ty = 0.0f, tz = 0.0f;
@@ -396,7 +366,6 @@ void run() {
     const float translateStep = 0.02f;
     const float shearStep = 0.01f;
     const float rotateStep = 0.02f;
-    const float camOrbitStep = 0.03f;
 
     std::cout << "\n========== UNIDAD 4: RELLENOS Y SOMBRAS ==========\n";
     std::cout << "Objetos en escena:\n";
@@ -404,10 +373,7 @@ void run() {
     std::cout << "  Centro:    RELLENO DEGRADADO (colores interpolados)\n";
     std::cout << "  Derecha:   RELLENO DE PATRON (tablero 4x4)\n";
     std::cout << "\n=== CONTROL DE CAMARA ===\n";
-    std::cout << "1: Perspectiva (orbitar con FLECHAS)\n";
-    std::cout << "2: Arriba  3: Abajo  4: Frente\n";
-    std::cout << "5: Atras   6: Izquierda  7: Derecha\n";
-    std::cout << "Flechas: Orbitar camara (modo perspectiva)\n";
+    std::cout << "Click izquierdo + arrastrar raton: orbitar camara\n";
     std::cout << "\n=== TRANSFORMACIONES (objeto central) ===\n";
     std::cout << "q/e: escalar   w/a/s/d: trasladar XY\n";
     std::cout << "z/x: trasladar Z   f/v: rotar X\n";
@@ -420,25 +386,6 @@ void run() {
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, 1);
-
-        // Camera mode switching
-        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) camMode = CAM_PERSPECTIVE;
-        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) camMode = CAM_TOP;
-        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) camMode = CAM_BOTTOM;
-        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) camMode = CAM_FRONT;
-        if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) camMode = CAM_BACK;
-        if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) camMode = CAM_LEFT;
-        if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) camMode = CAM_RIGHT;
-
-        // Camera orbit (only in perspective mode)
-        if (camMode == CAM_PERSPECTIVE) {
-            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) camAngleH -= camOrbitStep;
-            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) camAngleH += camOrbitStep;
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) camAngleV += camOrbitStep;
-            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) camAngleV -= camOrbitStep;
-            if (camAngleV > 1.5f) camAngleV = 1.5f;
-            if (camAngleV < -1.5f) camAngleV = -1.5f;
-        }
 
         bool changed = false;
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { scaleValue += scaleStep; changed = true; }
@@ -484,7 +431,7 @@ void run() {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        setCameraView(camMode, camAngleH, camAngleV, camDist, w, h);
+        setCameraView(camAngleH, camAngleV, camDist, w, h);
 
         // Light position for shadow
         float lx = 2.0f, ly = 5.0f, lz = 3.0f;

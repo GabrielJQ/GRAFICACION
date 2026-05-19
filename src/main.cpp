@@ -11,6 +11,16 @@
 
 const float PI = 3.14159265359f;
 
+enum CamMode {
+    CAM_PERSPECTIVE = 1,
+    CAM_TOP,
+    CAM_BOTTOM,
+    CAM_FRONT,
+    CAM_BACK,
+    CAM_LEFT,
+    CAM_RIGHT
+};
+
 void printMatrix(const Matrix3D& mat) {
     std::cout << "\n=== MATRIZ RESULTANTE ===\n";
     for (int i = 0; i < 4; i++) {
@@ -66,19 +76,28 @@ Matrix3D getOperacion(int opcion) {
     return mat;
 }
 
-void drawCube(float r, float g, float b) {
-    glColor3f(r*0.3f, g*0.3f, b*0.3f);
+// ====== RELLENO SÓLIDO (Solid Fill) ======
+void drawSolidFillCube() {
+    glShadeModel(GL_FLAT);
+    float r = 0.0f, g = 0.8f, b = 1.0f;
+
     glBegin(GL_QUADS);
+    glColor3f(r, g, b);
     glVertex3f(0,0,0); glVertex3f(1,0,0); glVertex3f(1,1,0); glVertex3f(0,1,0);
-    glVertex3f(0,0,1); glVertex3f(1,0,1); glVertex3f(1,1,1); glVertex3f(0,1,1);
-    glVertex3f(0,0,0); glVertex3f(0,1,0); glVertex3f(0,1,1); glVertex3f(0,0,1);
+    glColor3f(r*0.8f, g*0.8f, b*0.8f);
+    glVertex3f(0,0,1); glVertex3f(0,1,1); glVertex3f(1,1,1); glVertex3f(1,0,1);
+    glColor3f(r*0.6f, g*0.6f, b*0.6f);
+    glVertex3f(0,0,0); glVertex3f(0,0,1); glVertex3f(0,1,1); glVertex3f(0,1,0);
+    glColor3f(r*0.7f, g*0.7f, b*0.7f);
     glVertex3f(1,0,0); glVertex3f(1,1,0); glVertex3f(1,1,1); glVertex3f(1,0,1);
-    glVertex3f(0,1,0); glVertex3f(1,1,0); glVertex3f(1,1,1); glVertex3f(0,1,1);
+    glColor3f(r*0.9f, g*0.9f, b*0.9f);
+    glVertex3f(0,1,0); glVertex3f(0,1,1); glVertex3f(1,1,1); glVertex3f(1,1,0);
+    glColor3f(r*0.4f, g*0.4f, b*0.4f);
     glVertex3f(0,0,0); glVertex3f(1,0,0); glVertex3f(1,0,1); glVertex3f(0,0,1);
     glEnd();
 
-    glColor3f(r, g, b);
-    glLineWidth(2.0f);
+    glColor3f(1,1,1);
+    glLineWidth(1.0f);
     glBegin(GL_LINES);
     glVertex3f(0,0,0); glVertex3f(1,0,0);
     glVertex3f(1,0,0); glVertex3f(1,1,0);
@@ -95,6 +114,177 @@ void drawCube(float r, float g, float b) {
     glEnd();
 }
 
+// ====== RELLENO DEGRADADO (Gradient Fill) ======
+void drawGradientCube() {
+    glShadeModel(GL_SMOOTH);
+
+    glBegin(GL_QUADS);
+    glColor3f(1,0,0); glVertex3f(0,0,0);
+    glColor3f(0,1,0); glVertex3f(1,0,0);
+    glColor3f(0,0,1); glVertex3f(1,1,0);
+    glColor3f(1,1,0); glVertex3f(0,1,0);
+
+    glColor3f(1,0,1); glVertex3f(0,0,1);
+    glColor3f(0,1,1); glVertex3f(1,0,1);
+    glColor3f(1,0.5f,0); glVertex3f(1,1,1);
+    glColor3f(0.2f,0.8f,0.2f); glVertex3f(0,1,1);
+
+    glColor3f(0.5f,0,0.5f); glVertex3f(0,0,0);
+    glColor3f(0.5f,0.5f,0); glVertex3f(0,0,1);
+    glColor3f(0,0.5f,0.5f); glVertex3f(0,1,1);
+    glColor3f(0.8f,0.2f,0.2f); glVertex3f(0,1,0);
+
+    glColor3f(0.2f,0.2f,0.8f); glVertex3f(1,0,0);
+    glColor3f(0.8f,0.8f,0.2f); glVertex3f(1,0,1);
+    glColor3f(0.2f,0.8f,0.8f); glVertex3f(1,1,1);
+    glColor3f(0.8f,0.2f,0.8f); glVertex3f(1,1,0);
+
+    glColor3f(0,0.6f,0); glVertex3f(0,1,0);
+    glColor3f(0,0,0.6f); glVertex3f(0,1,1);
+    glColor3f(0.6f,0,0); glVertex3f(1,1,1);
+    glColor3f(0.6f,0.6f,0); glVertex3f(1,1,0);
+
+    glColor3f(0.4f,0,0.4f); glVertex3f(0,0,0);
+    glColor3f(0,0.4f,0.4f); glVertex3f(1,0,0);
+    glColor3f(0.4f,0.4f,0); glVertex3f(1,0,1);
+    glColor3f(0,0,0.4f); glVertex3f(0,0,1);
+    glEnd();
+
+    glShadeModel(GL_FLAT);
+
+    glColor3f(1,1,1);
+    glLineWidth(1.0f);
+    glBegin(GL_LINES);
+    glVertex3f(0,0,0); glVertex3f(1,0,0);
+    glVertex3f(1,0,0); glVertex3f(1,1,0);
+    glVertex3f(1,1,0); glVertex3f(0,1,0);
+    glVertex3f(0,1,0); glVertex3f(0,0,0);
+    glVertex3f(0,0,1); glVertex3f(1,0,1);
+    glVertex3f(1,0,1); glVertex3f(1,1,1);
+    glVertex3f(1,1,1); glVertex3f(0,1,1);
+    glVertex3f(0,1,1); glVertex3f(0,0,1);
+    glVertex3f(0,0,0); glVertex3f(0,0,1);
+    glVertex3f(1,0,0); glVertex3f(1,0,1);
+    glVertex3f(1,1,0); glVertex3f(1,1,1);
+    glVertex3f(0,1,0); glVertex3f(0,1,1);
+    glEnd();
+}
+
+// ====== RELLENO DE PATRÓN (Pattern Fill - tipo ajedrez) ======
+void drawPatternCube() {
+    const int DIVS = 4;
+    float step = 1.0f / DIVS;
+
+    for (int i = 0; i < DIVS; i++) {
+        for (int j = 0; j < DIVS; j++) {
+            float x0 = i*step, x1 = (i+1)*step;
+            float y0 = j*step, y1 = (j+1)*step;
+            float c = ((i + j) % 2 == 0) ? 1.0f : 0.3f;
+
+            glBegin(GL_QUADS);
+            glColor3f(1.0f*c, 0.5f*c, 0.0f);
+            glVertex3f(x0,y0,0); glVertex3f(x1,y0,0);
+            glVertex3f(x1,y1,0); glVertex3f(x0,y1,0);
+
+            glColor3f(0.0f, 0.5f*c, 1.0f*c);
+            glVertex3f(x0,y0,1); glVertex3f(x0,y1,1);
+            glVertex3f(x1,y1,1); glVertex3f(x1,y0,1);
+
+            glColor3f(0.5f*c, 0.0f, 1.0f*c);
+            glVertex3f(0,y0,x0); glVertex3f(0,y1,x0);
+            glVertex3f(0,y1,x1); glVertex3f(0,y0,x1);
+
+            glColor3f(1.0f*c, 0.0f, 0.5f*c);
+            glVertex3f(1,y0,x0); glVertex3f(1,y0,x1);
+            glVertex3f(1,y1,x1); glVertex3f(1,y1,x0);
+
+            glColor3f(0.0f, 1.0f*c, 0.5f*c);
+            glVertex3f(x0,1,y0); glVertex3f(x1,1,y0);
+            glVertex3f(x1,1,y1); glVertex3f(x0,1,y1);
+
+            glColor3f(0.5f*c, 1.0f*c, 0.0f);
+            glVertex3f(x0,0,y0); glVertex3f(x0,0,y1);
+            glVertex3f(x1,0,y1); glVertex3f(x1,0,y0);
+            glEnd();
+        }
+    }
+
+    glColor3f(0.5f,0.5f,0.5f);
+    glLineWidth(1.0f);
+    glBegin(GL_LINES);
+    glVertex3f(0,0,0); glVertex3f(1,0,0);
+    glVertex3f(1,0,0); glVertex3f(1,1,0);
+    glVertex3f(1,1,0); glVertex3f(0,1,0);
+    glVertex3f(0,1,0); glVertex3f(0,0,0);
+    glVertex3f(0,0,1); glVertex3f(1,0,1);
+    glVertex3f(1,0,1); glVertex3f(1,1,1);
+    glVertex3f(1,1,1); glVertex3f(0,1,1);
+    glVertex3f(0,1,1); glVertex3f(0,0,1);
+    glVertex3f(0,0,0); glVertex3f(0,0,1);
+    glVertex3f(1,0,0); glVertex3f(1,0,1);
+    glVertex3f(1,1,0); glVertex3f(1,1,1);
+    glVertex3f(0,1,0); glVertex3f(0,1,1);
+    glEnd();
+}
+
+// ====== SOMBRA PROYECTADA (Planar Shadow) ======
+void drawShadow(float size, const Matrix3D& transform, float lightX, float lightY, float lightZ) {
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    float dx = lightX, dy = lightY, dz = lightZ;
+    float shadowMat[16] = {
+        -dy, 0, 0, 0,
+        0, -dy, 0, 0,
+        0, 0, -dy, 0,
+        dx, 0, dz, 0
+    };
+
+    glPushMatrix();
+    glMultMatrixf(shadowMat);
+
+    float glMat[16];
+    for (int col = 0; col < 4; col++)
+        for (int row = 0; row < 4; row++)
+            glMat[col * 4 + row] = transform.m[row][col];
+    glMultMatrixf(glMat);
+    glScalef(size, size, size);
+
+    glColor4f(0.0f, 0.0f, 0.0f, 0.3f);
+    glBegin(GL_QUADS);
+    glVertex3f(0,0,0); glVertex3f(1,0,0); glVertex3f(1,1,0); glVertex3f(0,1,0);
+    glVertex3f(0,0,1); glVertex3f(0,1,1); glVertex3f(1,1,1); glVertex3f(1,0,1);
+    glVertex3f(0,0,0); glVertex3f(0,0,1); glVertex3f(0,1,1); glVertex3f(0,1,0);
+    glVertex3f(1,0,0); glVertex3f(1,1,0); glVertex3f(1,1,1); glVertex3f(1,0,1);
+    glVertex3f(0,1,0); glVertex3f(0,1,1); glVertex3f(1,1,1); glVertex3f(1,1,0);
+    glVertex3f(0,0,0); glVertex3f(1,0,0); glVertex3f(1,0,1); glVertex3f(0,0,1);
+    glEnd();
+
+    glPopMatrix();
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+}
+
+// ====== PISO (grid con transparencia) ======
+void drawFloor() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(0.3f, 0.3f, 0.4f, 0.5f);
+    glBegin(GL_LINES);
+    float size = 6.0f;
+    float step = 0.5f;
+    for (float i = -size; i <= size; i += step) {
+        glVertex3f(i, 0, -size);
+        glVertex3f(i, 0, size);
+        glVertex3f(-size, 0, i);
+        glVertex3f(size, 0, i);
+    }
+    glEnd();
+    glDisable(GL_BLEND);
+}
+
 Matrix3D buildTransform(float scale, float tx, float ty, float tz, float shx, float shy, float shz, float rotX, float rotY, float rotZ) {
     Matrix3D S = Matrix3D::scale(scale, scale, scale);
     Matrix3D RX = Matrix3D::rotateX(rotX);
@@ -108,13 +298,79 @@ Matrix3D buildTransform(float scale, float tx, float ty, float tz, float shx, fl
     return T * center * R * S * H * uncenter;
 }
 
+void applyGLMatrix(const Matrix3D& mat) {
+    float glMat[16];
+    for (int col = 0; col < 4; col++)
+        for (int row = 0; row < 4; row++)
+            glMat[col * 4 + row] = mat.m[row][col];
+    glMultMatrixf(glMat);
+}
+
+void setCameraView(CamMode mode, float angleH, float angleV, float dist, int w, int h) {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    float aspect = (float)w / (float)h;
+
+    if (mode == CAM_PERSPECTIVE) {
+        gluPerspective(45.0, aspect, 0.1, 100.0);
+    } else {
+        float viewSize = 4.5f;
+        if (aspect > 1.0f)
+            glOrtho(-viewSize * aspect, viewSize * aspect, -viewSize, viewSize, -20, 20);
+        else
+            glOrtho(-viewSize, viewSize, -viewSize / aspect, viewSize / aspect, -20, 20);
+    }
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    float eyeX, eyeY, eyeZ;
+    float upX = 0, upY = 1, upZ = 0;
+    float cx = 0, cy = 0.2f, cz = 0;
+
+    switch (mode) {
+        case CAM_PERSPECTIVE: {
+            float ch = cosf(angleH), sh = sinf(angleH);
+            float cv = cosf(angleV), sv = sinf(angleV);
+            eyeX = dist * cv * ch;
+            eyeY = dist * sv;
+            eyeZ = dist * cv * sh;
+            break;
+        }
+        case CAM_TOP:
+            eyeX = 0; eyeY = dist; eyeZ = 0; upX = 0; upY = 0; upZ = -1;
+            break;
+        case CAM_BOTTOM:
+            eyeX = 0; eyeY = -dist; eyeZ = 0; upX = 0; upY = 0; upZ = 1;
+            break;
+        case CAM_FRONT:
+            eyeX = 0; eyeY = 0; eyeZ = dist; upX = 0; upY = 1; upZ = 0;
+            break;
+        case CAM_BACK:
+            eyeX = 0; eyeY = 0; eyeZ = -dist; upX = 0; upY = 1; upZ = 0;
+            break;
+        case CAM_LEFT:
+            eyeX = -dist; eyeY = 0; eyeZ = 0; upX = 0; upY = 1; upZ = 0;
+            break;
+        case CAM_RIGHT:
+            eyeX = dist; eyeY = 0; eyeZ = 0; upX = 0; upY = 1; upZ = 0;
+            break;
+        default:
+            eyeX = dist; eyeY = 0; eyeZ = 0; upX = 0; upY = 1; upZ = 0;
+            break;
+    }
+
+    gluLookAt(eyeX, eyeY, eyeZ, cx, cy, cz, upX, upY, upZ);
+}
+
 void run() {
     if (!glfwInit()) {
         std::cerr << "Error GLFW\n";
         return;
     }
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "3D", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Unidad 4: Rellenos y Sombras", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return;
@@ -126,7 +382,9 @@ void run() {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
-    float camAngle = 0.5f;
+    CamMode camMode = CAM_PERSPECTIVE;
+    float camAngleH = 0.5f;
+    float camAngleV = 0.3f;
     float camDist = 6.0f;
 
     float scaleValue = 1.0f;
@@ -138,19 +396,24 @@ void run() {
     const float translateStep = 0.02f;
     const float shearStep = 0.01f;
     const float rotateStep = 0.02f;
+    const float camOrbitStep = 0.03f;
 
-    std::cout << "\n=== CONTROL POR TECLAS ===\n";
-    std::cout << "q/e: escalar (+/-)\n";
-    std::cout << "w/a/s/d: trasladar (arriba/izquierda/abajo/derecha)\n";
-    std::cout << "z/x: trasladar en z (adelante/atras)\n";
-    std::cout << "f/v: rotar en X (+/-)\n";
-    std::cout << "g/b: rotar en Y (+/-)\n";
-    std::cout << "h/n: rotar en Z (+/-)\n";
-    std::cout << "i/k: sesgar en X (+/-)\n";
-    std::cout << "j/l: sesgar en Y (+/-)\n";
-    std::cout << "u/o: sesgar en Z (+/-)\n";
-    std::cout << "r: reiniciar transformacion\n";
-    std::cout << "ESC: salir\n";
+    std::cout << "\n========== UNIDAD 4: RELLENOS Y SOMBRAS ==========\n";
+    std::cout << "Objetos en escena:\n";
+    std::cout << "  Izquierda: RELLENO SOLIDO (color uniforme por cara)\n";
+    std::cout << "  Centro:    RELLENO DEGRADADO (colores interpolados)\n";
+    std::cout << "  Derecha:   RELLENO DE PATRON (tablero 4x4)\n";
+    std::cout << "\n=== CONTROL DE CAMARA ===\n";
+    std::cout << "1: Perspectiva (orbitar con FLECHAS)\n";
+    std::cout << "2: Arriba  3: Abajo  4: Frente\n";
+    std::cout << "5: Atras   6: Izquierda  7: Derecha\n";
+    std::cout << "Flechas: Orbitar camara (modo perspectiva)\n";
+    std::cout << "\n=== TRANSFORMACIONES (objeto central) ===\n";
+    std::cout << "q/e: escalar   w/a/s/d: trasladar XY\n";
+    std::cout << "z/x: trasladar Z   f/v: rotar X\n";
+    std::cout << "g/b: rotar Y   h/n: rotar Z\n";
+    std::cout << "i/k: sesgar X   j/l: sesgar Y   u/o: sesgar Z\n";
+    std::cout << "r: reiniciar   ESC: salir\n";
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -158,87 +421,46 @@ void run() {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, 1);
 
+        // Camera mode switching
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) camMode = CAM_PERSPECTIVE;
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) camMode = CAM_TOP;
+        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) camMode = CAM_BOTTOM;
+        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) camMode = CAM_FRONT;
+        if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) camMode = CAM_BACK;
+        if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) camMode = CAM_LEFT;
+        if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) camMode = CAM_RIGHT;
+
+        // Camera orbit (only in perspective mode)
+        if (camMode == CAM_PERSPECTIVE) {
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) camAngleH -= camOrbitStep;
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) camAngleH += camOrbitStep;
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) camAngleV += camOrbitStep;
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) camAngleV -= camOrbitStep;
+            if (camAngleV > 1.5f) camAngleV = 1.5f;
+            if (camAngleV < -1.5f) camAngleV = -1.5f;
+        }
+
         bool changed = false;
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-            scaleValue += scaleStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-            scaleValue = std::max(0.1f, scaleValue - scaleStep);
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            ty += translateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            ty -= translateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            tx -= translateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            tx += translateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-            tz += translateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-            tz -= translateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-            shx += shearStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
-            shx -= shearStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
-            shy += shearStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-            shy -= shearStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
-            shz += shearStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-            shz -= shearStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-            rotX += rotateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
-            rotX -= rotateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-            rotY += rotateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
-            rotY -= rotateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
-            rotZ += rotateStep;
-            changed = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
-            rotZ -= rotateStep;
-            changed = true;
-        }
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { scaleValue += scaleStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { scaleValue = std::max(0.1f, scaleValue - scaleStep); changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { ty += translateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { ty -= translateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { tx -= translateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { tx += translateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) { tz += translateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) { tz -= translateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) { shx += shearStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) { shx -= shearStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) { shy += shearStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) { shy -= shearStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) { shz += shearStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) { shz -= shearStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) { rotX += rotateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) { rotX -= rotateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) { rotY += rotateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) { rotY -= rotateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) { rotZ += rotateStep; changed = true; }
+        if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) { rotZ -= rotateStep; changed = true; }
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
             scaleValue = 1.0f;
             tx = ty = tz = 0.0f;
@@ -262,34 +484,57 @@ void run() {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(45.0, (float)w / h, 0.1, 100.0);
+        setCameraView(camMode, camAngleH, camAngleV, camDist, w, h);
 
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        gluLookAt(camDist * cosf(camAngle), 0, camDist * sinf(camAngle),
-                  0, 0, 0,
-                  0, 1, 0);
+        // Light position for shadow
+        float lx = 2.0f, ly = 5.0f, lz = 3.0f;
 
+        // -- Draw floor
+        drawFloor();
+
+        // ====== 1. RELLENO SOLIDO (izquierda) ======
         glPushMatrix();
-        glTranslatef(-1.2f, -0.5f, -0.5f);
-        drawCube(0.0f, 0.8f, 1.0f);
+        glTranslatef(-2.5f, -0.5f, -0.5f);
+        drawSolidFillCube();
         glPopMatrix();
 
+        // ====== 2. RELLENO DEGRADADO (centro) ======
+        Matrix3D gradientTrans = buildTransform(scaleValue, tx, ty, tz, shx, shy, shz, rotX, rotY, rotZ);
+        Matrix3D gradientPos = Matrix3D::translate(0.0f, 0.0f, 0.0f);
+        Matrix3D gradientFinal = gradientPos * gradientTrans;
+
         glPushMatrix();
-        Matrix3D transformacion = buildTransform(scaleValue, tx, ty, tz, shx, shy, shz, rotX, rotY, rotZ);
-        Matrix3D posicion = Matrix3D::translate(1.2f, 0.0f, 0.0f);
-        Matrix3D matrizFinal = posicion * transformacion;
-        
-        float glMat[16];
-        for (int col = 0; col < 4; col++) {
-            for (int row = 0; row < 4; row++) {
-                glMat[col * 4 + row] = matrizFinal.m[row][col];
-            }
-        }
-        glMultMatrixf(glMat);
-        drawCube(1.0f, 0.4f, 0.2f);
+        glTranslatef(0.0f, -0.5f, -0.5f);
+        applyGLMatrix(gradientTrans);
+        drawGradientCube();
+        glPopMatrix();
+
+        // Shadow for gradient cube
+        drawShadow(1.0f, gradientTrans, lx, ly, lz);
+
+        // ====== 3. RELLENO DE PATRON (derecha) ======
+        glPushMatrix();
+        glTranslatef(2.5f, -0.5f, -0.5f);
+        drawPatternCube();
+        glPopMatrix();
+
+        // Labels for fill types
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+        glOrtho(0, w, 0, h, -1, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+
+        glDisable(GL_DEPTH_TEST);
+        glColor3f(0.8f, 0.8f, 0.8f);
+        // We'd need a text rendering function - skip for now
+
+        glEnable(GL_DEPTH_TEST);
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
 
         glfwSwapBuffers(window);
